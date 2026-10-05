@@ -1,9 +1,9 @@
 # 0002: Deploy to Vercel
 
-- Status: Accepted
+- Status: Superseded
 - Date: 2026-10-03
 - Supersedes: None
-- Superseded by: None
+- Superseded by: [0008](0008-vercel-cicd.md)
 
 ## Context
 

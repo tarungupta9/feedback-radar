@@ -2,15 +2,16 @@
 
 Record significant technology and architecture choices here as numbered architecture decision records (ADRs). These decisions describe the current baseline, not permanent commitments.
 
-| Record                                      | Decision                                           | Status   |
-| ------------------------------------------- | -------------------------------------------------- | -------- |
-| [0001](0001-nextjs-typescript.md)           | Next.js App Router with TypeScript                 | Accepted |
-| [0002](0002-vercel-deployment.md)           | Deploy to Vercel                                   | Accepted |
-| [0003](0003-tailwind-shadcn.md)             | Tailwind CSS and shadcn/ui                         | Accepted |
-| [0004](0004-typesafe-ai.md)                 | TypeSafe AI SDK on the server                      | Accepted |
-| [0005](0005-feedback-workflow.md)           | Validated uploads and individual feedback analysis | Accepted |
-| [0006](0006-focused-feedback-experience.md) | Focused workspace and separate how-to page         | Accepted |
-| [0007](0007-anonymous-rate-limiting.md)     | Shared admission control for anonymous AI analysis | Accepted |
+| Record                                      | Decision                                           | Status     |
+| ------------------------------------------- | -------------------------------------------------- | ---------- |
+| [0001](0001-nextjs-typescript.md)           | Next.js App Router with TypeScript                 | Accepted   |
+| [0002](0002-vercel-deployment.md)           | Deploy to Vercel                                   | Superseded |
+| [0003](0003-tailwind-shadcn.md)             | Tailwind CSS and shadcn/ui                         | Accepted   |
+| [0004](0004-typesafe-ai.md)                 | TypeSafe AI SDK on the server                      | Accepted   |
+| [0005](0005-feedback-workflow.md)           | Validated uploads and individual feedback analysis | Accepted   |
+| [0006](0006-focused-feedback-experience.md) | Focused workspace and separate how-to page         | Accepted   |
+| [0007](0007-anonymous-rate-limiting.md)     | Shared admission control for anonymous AI analysis | Accepted   |
+| [0008](0008-vercel-cicd.md)                 | CI-gated Vercel Git deployments                    | Accepted   |
 
 ## Evolving decisions
 

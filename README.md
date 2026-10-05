@@ -65,7 +65,7 @@ AI assesses happiness (including mixed/unclear), main topic, impact, urgency and
 
 Use **Analyze another file** to start a new upload. **Back to previous results** restores the previous batch until a replacement file validates. Files and results stay in browser memory and clear on refresh. No database or upload history is implemented. Only the server imports `getTypeSafeClient()`; server input and provider output are validated at runtime. Requests have size limits, cancellation and bounded timeouts. Missing credentials, provider failures and timeouts produce actionable row errors without leaking provider request details.
 
-Analysis has server-side rate, daily quota and concurrency protection. Anonymous access remains supported; shared-network users share an IP allowance and clients can rotate addresses. Bot verification and anonymous-session limits are deferred. Same-origin checking and browser concurrency are supplementary controls. Public deployment still requires Redis configuration, reviewed quotas and the WAF rule below. No deployment is performed here.
+Analysis has server-side rate, daily quota and concurrency protection. Anonymous access remains supported; shared-network users share an IP allowance and clients can rotate addresses. Bot verification and anonymous-session limits are deferred. Same-origin checking and browser concurrency are supplementary controls. Enabling hosted analysis requires Redis configuration, reviewed quotas and the WAF rule below. The initial hosted rollout keeps analysis disabled.
 
 ## Analysis protection
 
@@ -116,13 +116,25 @@ Add components only when needed. Review generated source and dependency changes;
 
 ## Vercel deployment
 
-1. Create a remote Git repository and push `main`.
-2. Import the repository into Vercel using the Next.js preset and repository root.
-3. Use Node.js 24.x, install command `npm ci`, and build command `npm run build`. Leave the output directory at the framework default.
-4. Add `TYPESAFE_API_KEY` and all required protection settings separately to preview and production. Set an explicit global daily quota and the correct environment namespace, then configure and verify the WAF rule described above.
-5. Deploy and verify the homepage. Set `main` as the production branch; use branch previews for review.
+The private [GitHub repository](https://github.com/tarungupta9/feedback-radar) connects to the `feedback-radar` project in Vercel's **Tarun Gupta's projects** team. Vercel builds branch previews and production from `main`. Project settings use the Next.js preset, repository root, Node.js 24.x, install command `npm ci`, build command `npm run build`, and framework output defaults. No custom deployment adapter or `vercel.json` is required.
 
-This baseline does not create a remote repository or a live Vercel project. No custom Vercel configuration file is required.
+`.github/workflows/ci.yml` runs the **Feedback Radar quality** job on every push and pull request, with manual runs supported. It installs Node 24 and dependencies from the lockfile, installs/checks Redis binaries, runs tests (including real isolated Redis admission), lint, formatting, typecheck, and the production build. CI uses no provider or production Redis secrets; the remote Upstash suite remains opt-in. Actions are pinned to immutable revisions.
+
+The matching Vercel Deployment Check blocks production alias assignment until **Feedback Radar quality** succeeds for the deployed commit. Keep its name synchronized with the workflow job name. Failed/cancelled checks or missing results hold the release; inspect GitHub Actions and Vercel deployment details and fix the cause. Do not force-promote a failed check. Previews remain available for review before merging. Vercel rebuilds independently from CI; this retains the native Git integration without a Vercel deployment token in GitHub.
+
+Preview and production initially set `ANALYSIS_ENABLED=false` and `RATE_LIMIT_LOCAL_IDENTITY=false`. Provider and Redis credentials are intentionally absent. Uploads, sample data, and `/guide` work; valid analysis requests return 503 before provider execution. The current route checks provider credentials before the disable switch, so an unconfigured deployment reports the missing AI configuration. No paid analysis smoke test is performed during this rollout.
+
+### Recreating the deployment setup
+
+1. Connect the private repository to a Vercel project with the settings above and production branch `main`.
+2. Set the two disable settings in preview and production before deploying. Never upload `.env.local` or import development credentials automatically.
+3. In Vercel Project Settings → Deployment Checks, add the GitHub **Feedback Radar quality** check for production, blocking alias assignment. Configure it before the first production deployment. Use a 15-minute timeout.
+4. Push/merge code, confirm GitHub CI succeeds, then verify Vercel build and production promotion. Check `/`, `/guide`, `/sample-feedback.csv`, API rejection, and runtime errors. Preview URLs retain the team's deployment protection.
+5. To enable analysis later, configure server-only provider/Redis credentials, stable per-environment secrets/namespaces, deliberate daily quotas, the WAF rule above, and verify direct Vercel ingress in preview. Redeploy after changing environment variables; keep production disabled until the rollout checks pass.
+
+### Rollback
+
+Use the Vercel project's Deployments page to roll back to a previously verified production deployment. The first deployment has no earlier production version. Investigate failed CI/builds before retrying; force promotion bypasses the release gate. Rollback does not restore environment variables, firewall settings, or external Redis state. See [deployment checks](https://vercel.com/docs/deployment-checks), [instant rollback](https://vercel.com/docs/instant-rollback), and [the deployment decision](docs/decisions/0008-vercel-cicd.md).
 
 ## Dependency audit note
 
