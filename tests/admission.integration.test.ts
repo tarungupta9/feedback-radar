@@ -76,6 +76,8 @@ describe.skipIf(!available)("atomic admission against real Redis", () => {
   beforeAll(async () => {
     directory = mkdtempSync(join(tmpdir(), "radar-redis-"));
     socket = join(directory, "redis.sock");
+    let startupOutput = "";
+    let startupError: Error | undefined;
     server = spawn(
       serverBin,
       [
@@ -89,14 +91,26 @@ describe.skipIf(!available)("atomic admission against real Redis", () => {
         "",
         "--appendonly",
         "no",
-        "--locale-collate",
-        "C",
         "--dir",
         directory,
       ],
-      { stdio: "ignore", env: { ...process.env, LC_ALL: "C", LANG: "C" } },
+      {
+        stdio: ["ignore", "pipe", "pipe"],
+        env: { ...process.env, LC_ALL: "C", LANG: "C" },
+      },
     );
+    const capture = (chunk: Buffer) => {
+      startupOutput = (startupOutput + chunk.toString()).slice(-4000);
+    };
+    server.stdout?.on("data", capture);
+    server.stderr?.on("data", capture);
+    server.on("error", (error) => {
+      startupError = error;
+    });
     for (let attempt = 0; attempt < 100; attempt++) {
+      if (startupError) throw startupError;
+      if (server.exitCode !== null || server.signalCode !== null)
+        throw new Error(`Redis exited during startup: ${startupOutput}`);
       try {
         if ((await command("PING")) === "PONG") return;
       } catch {
@@ -104,7 +118,7 @@ describe.skipIf(!available)("atomic admission against real Redis", () => {
       }
       await new Promise((resolve) => setTimeout(resolve, 20));
     }
-    throw new Error("Redis did not start");
+    throw new Error(`Redis did not start: ${startupOutput}`);
   }, 10000);
   afterAll(async () => {
     if (server?.exitCode === null) {
