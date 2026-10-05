@@ -26,6 +26,12 @@ Rollback uses Vercel's previous production deployment. Environment variables and
 
 ## Verification and revisit conditions
 
+### Public portfolio update (2026-10-05)
+
+Repository visibility changes to public so recruiters can review project work. This does not grant an open-source reuse license or change the native Git deployment design. Use GitHub noreply commit identities, require the quality check and pull requests on `main`, reject ordinary force pushes/deletion, and require maintainer approval for workflows from all external contributors. Keep Vercel Git Fork Protection enabled and build logs/source private; production provider/Redis credentials must not be available to external preview builds.
+
+The disabled rollout above records the original release policy. Current Vercel project settings enable analysis and hold production credentials; preview has no provider credentials. Environment settings and deployed values can differ until redeployment. Verify quotas, trusted ingress and WAF separately when enabling hosted analysis. Public source visibility does not provision or prove these external controls.
+
 Verify a clean GitHub Actions run, production alias assignment only after the required check succeeds, branch preview deployment, homepage, guide, sample download, and API rejection with AI disabled. Check logs for deployment/runtime errors. No paid AI smoke test occurs during the disabled rollout.
 
 Revisit when duplicated builds become costly, artifact identity between CI and deployment is required, multiple apps share the repository, or release approvals and staged rollout become necessary.

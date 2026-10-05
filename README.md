@@ -2,6 +2,12 @@
 
 Upload CSV or Excel feedback, validate the format, then analyze each customer response with TypeSafe AI. See original feedback, customer happiness, topics, impact, urgency, suggested actions and confidence in one table. Summaries count successfully analyzed feedback only.
 
+## Portfolio review
+
+This public repository showcases project work for recruiters and hiring teams. It is maintained as a portfolio project; external contributions are not currently requested. No open-source reuse license is granted. Copyright © 2026 Tarun Gupta. All rights reserved, subject to GitHub's terms for viewing and forking public repositories.
+
+Start with the [architecture decisions](docs/decisions/README.md), [analysis API](src/app/api/feedback/analyze/route.ts), [atomic admission control](src/lib/abuse/admission.ts), and [behavior tests](tests). The project demonstrates validated CSV/Excel uploads, runtime-validated AI output, bounded requests, shared Redis quotas, accessible UI components, and CI-gated deployment.
+
 ## Stack
 
 - Next.js App Router, React, and strict TypeScript
@@ -116,17 +122,19 @@ Add components only when needed. Review generated source and dependency changes;
 
 ## Vercel deployment
 
-The private [GitHub repository](https://github.com/tarungupta9/feedback-radar) connects to the `feedback-radar` project in Vercel's **Tarun Gupta's projects** team. Vercel builds branch previews and production from `main`. Project settings use the Next.js preset, repository root, Node.js 24.x, install command `npm ci`, build command `npm run build`, and framework output defaults. No custom deployment adapter or `vercel.json` is required.
+The public [GitHub repository](https://github.com/tarungupta9/feedback-radar) connects to the `feedback-radar` project in Vercel. Vercel builds branch previews and production from `main`. Project settings use the Next.js preset, repository root, Node.js 24.x, install command `npm ci`, build command `npm run build`, and framework output defaults. No custom deployment adapter or `vercel.json` is required.
 
 `.github/workflows/ci.yml` runs the **Feedback Radar quality** job on every push and pull request, with manual runs supported. It installs Node 24 and dependencies from the lockfile, installs/checks Redis binaries, runs tests (including real isolated Redis admission), lint, formatting, typecheck, and the production build. CI uses no provider or production Redis secrets; the remote Upstash suite remains opt-in. Actions are pinned to immutable revisions.
 
 The matching Vercel Deployment Check blocks production alias assignment until **Feedback Radar quality** succeeds for the deployed commit. Keep its name synchronized with the workflow job name. Failed/cancelled checks or missing results hold the release; inspect GitHub Actions and Vercel deployment details and fix the cause. Do not force-promote a failed check. Previews remain available for review before merging. Vercel rebuilds independently from CI; this retains the native Git integration without a Vercel deployment token in GitHub.
 
-Preview and production initially set `ANALYSIS_ENABLED=false` and `RATE_LIMIT_LOCAL_IDENTITY=false`. Provider and Redis credentials are intentionally absent. Uploads, sample data, and `/guide` work; valid analysis requests return 503 before provider execution. The current route checks provider credentials before the disable switch, so an unconfigured deployment reports the missing AI configuration. No paid analysis smoke test is performed during this rollout.
+The initial rollout used `ANALYSIS_ENABLED=false` without provider/Redis credentials. The current project settings enable analysis in production and preview; production credentials are stored in Vercel, while preview has no provider credentials. These settings are managed independently from source code and require a new deployment to take effect. The route checks provider credentials before the disable switch, so an unconfigured preview reports missing AI configuration. No paid analysis request is needed to build or review the repository.
+
+Keep Vercel Git Fork Protection enabled and build logs/source private. Review external code before authorizing a fork deployment: build-time code can access environment variables even when application analysis is disabled. Keep production provider and Redis credentials out of previews and GitHub Actions. GitHub fork workflows require maintainer approval for all external contributors. Protect `main` with the `Feedback Radar quality` check and pull requests; force pushes and deletion are reserved for explicit maintenance, not ordinary development. Commits use the repository owner's GitHub noreply address.
 
 ### Recreating the deployment setup
 
-1. Connect the private repository to a Vercel project with the settings above and production branch `main`.
+1. Connect the repository to a Vercel project with the settings above and production branch `main`. Enable Git Fork Protection and keep build logs/source private before accepting external pull requests.
 2. Set the two disable settings in preview and production before deploying. Never upload `.env.local` or import development credentials automatically.
 3. In Vercel Project Settings → Deployment Checks, add the GitHub **Feedback Radar quality** check for production, blocking alias assignment. Configure it before the first production deployment. Use a 15-minute timeout.
 4. Push/merge code, confirm GitHub CI succeeds, then verify Vercel build and production promotion. Check `/`, `/guide`, `/sample-feedback.csv`, API rejection, and runtime errors. Preview URLs retain the team's deployment protection.
