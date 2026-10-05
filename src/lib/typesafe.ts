@@ -16,6 +16,6 @@ export function getTypeSafeClient(): TypeSafeClient {
     );
   }
 
-  client = new TypeSafeClient({ apiKey });
+  client = new TypeSafeClient({ apiKey, logLevel: "off" });
   return client;
 }
